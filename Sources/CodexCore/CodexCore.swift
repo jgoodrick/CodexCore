@@ -1,3 +1,7 @@
+//
+//  Created by Joseph Goodrick on 7/5/21
+//
+
 public class Codex<T: Identifiable> {
     
     public private(set) var allItems: [T.ID: T]
