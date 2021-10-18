@@ -6,16 +6,16 @@ public class Codex<T: Identifiable> {
     
     public private(set) var allItems: [T.ID: T]
     private var onEvent: ((Event<T>) -> Void)?
-    private var storedOnInsertReducer: ((T?, T) -> T)?
+    private var onInsertCollision: ((T?, T) -> T)?
     
     public init(
         _ items: [T] = [],
         onEvent: ((Event<T>) -> Void)? = nil,
-        reduceOnInsert: ((T?, T) -> T)? = nil
+        onCollision: ((T?, T) -> T)? = nil
     ) {
         self.allItems = items.asDictionary
         self.onEvent = onEvent
-        self.storedOnInsertReducer = reduceOnInsert
+        self.onInsertCollision = onCollision
     }
     
     public func sorted<U: Comparable>(by keyPath: KeyPath<T, U>) -> [T] {
@@ -26,14 +26,14 @@ public class Codex<T: Identifiable> {
         allItems.values.filter(isIncluded).sorted(by: sortKeyPath)
     }
     
-    public func insert(_ item: T, reducer: ((T?, T) -> T)? = nil) {
-        let itemToInsert = (reducer ?? storedOnInsertReducer)?(allItems[item.id], item) ?? item
+    public func insert(_ item: T, onCollision: ((T?, T) -> T)? = nil) {
+        let itemToInsert = (onCollision ?? onInsertCollision)?(allItems[item.id], item) ?? item
         allItems[item.id] = itemToInsert
         onEvent?(.added(itemToInsert))
     }
     
-    public func insert(batch items: [T], reducer: ((T?, T) -> T)? = nil) {
-        items.forEach({insert($0, reducer: reducer)})
+    public func insert(batch items: [T], onCollision: ((T?, T) -> T)? = nil) {
+        items.forEach({insert($0, onCollision: onCollision)})
     }
 
     @discardableResult

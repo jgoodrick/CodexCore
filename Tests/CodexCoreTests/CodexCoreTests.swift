@@ -52,7 +52,7 @@ class CodexTests: XCTestCase {
     }
     
     func test_insert_idMatchFound_obeysDelegateByDefault() {
-        let sut = Codex([Identified(id: "1", value: "0")], reduceOnInsert: { existing, new in
+        let sut = Codex([Identified(id: "1", value: "0")], onCollision: { existing, new in
             existing ?? new
         })
         sut.insert(Identified(id: "1", value: "1"))
@@ -61,10 +61,10 @@ class CodexTests: XCTestCase {
     }
     
     func test_insert_idMatchFound_methodPassesReducer_overridesStoredReducer() {
-        let sut = Codex([Identified(id: "1", value: "0")], reduceOnInsert: { existing, new in
+        let sut = Codex([Identified(id: "1", value: "0")], onCollision: { existing, new in
             existing ?? new
         })
-        sut.insert(Identified(id: "1", value: "1"), reducer: { existing, new in
+        sut.insert(Identified(id: "1", value: "1"), onCollision: { existing, new in
             new
         })
         XCTAssertEqual(sut.allItems.values.first?.value, "1")
@@ -79,7 +79,7 @@ class CodexTests: XCTestCase {
     }
 
     func test_batchInsert_idMatchesFound_obeysStoredReducerByDefault() {
-        let sut = Codex([Identified(id: "1", value: "0")], reduceOnInsert: { existing, new in
+        let sut = Codex([Identified(id: "1", value: "0")], onCollision: { existing, new in
             existing ?? new
         })
         sut.insert(Identified(id: "1", value: "1"))
@@ -88,10 +88,10 @@ class CodexTests: XCTestCase {
     }
 
     func test_batchInsert_idMatchesFound_methodPassesReducer_overridesStoredReducer() {
-        let sut = Codex([Identified(id: "1", value: "0")], reduceOnInsert: { existing, new in
+        let sut = Codex([Identified(id: "1", value: "0")], onCollision: { existing, new in
             existing ?? new
         })
-        sut.insert(batch: [Identified(id: "1", value: "1")], reducer: { existing, new in
+        sut.insert(batch: [Identified(id: "1", value: "1")], onCollision: { existing, new in
             new
         })
         XCTAssertEqual(sut.allItems.values.first?.value, "1")
@@ -199,7 +199,7 @@ class CodexTests: XCTestCase {
     func test_onInsertBatch_publishesAddedEvents_overridesDefaultReducer() {
         var added: [String] = []
         var publishedEvents = 0
-        let sut = Codex<String>(reduceOnInsert: { _, _ in
+        let sut = Codex<String>(onCollision: { _, _ in
             XCTFail("Not overridden")
             return ""
         })
